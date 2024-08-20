@@ -1,3 +1,5 @@
+use std::{error::Error, io};
+
 use curl::easy::Easy;
 
 pub trait Checkable {
@@ -36,4 +38,21 @@ impl Checkable for WebService {
             }
         }
     }
+}
+
+pub fn read_services() -> Result<Vec<Box<dyn Checkable>>, Box<dyn Error>> {
+
+    let mut checkable_services: Vec<Box<dyn Checkable>> = vec![];
+    let mut reader = csv::Reader::from_path("services.csv").unwrap();
+    for result in reader.records() {
+
+        let record = result?;
+        //println!("{:?}", record.get(0).unwrap());
+        let service_entry = Box::new(WebService {
+            service_name: record.get(0).unwrap().to_owned(),
+            endpoint_to_check: record.get(2).unwrap().to_owned()
+        });
+        checkable_services.push(service_entry);
+    }
+    Ok(checkable_services)
 }
