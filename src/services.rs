@@ -1,4 +1,4 @@
-use std::{error::Error, io};
+use std::{error::Error, fmt::format, io};
 
 use curl::easy::Easy;
 
@@ -31,13 +31,23 @@ impl Checkable for WebService {
         match curl_result {
             Ok(()) => match curl.response_code().unwrap() {
                 200 => Ok("Service up and running".to_owned()),
-                error_code @ _ => Err(format!("Error with code: {}", error_code).to_owned()),
+                error_code @ _ => Err(create_error_report(&self.service_name, &self.endpoint_to_check, &format!("No success, status code: {}", error_code.to_string().to_owned()))),
             },
             Err(error) => {
-                return Err(error.to_string().to_owned());
+                let error_report = create_error_report(&self.service_name, &self.endpoint_to_check, &error.to_string().to_owned()); 
+
+                return Err(error_report);
             }
         }
     }
+}
+
+fn create_error_report(service_name: &str, endpoint_to_check: &str, error: &str) -> String {
+    [format!("------------------------------------------------------"),
+    format!("Service: {}", service_name),
+    format!("Endpoint: {}", endpoint_to_check),
+    format!("Error: {}", error)].join("\n").to_string()
+
 }
 
 pub fn read_services() -> Result<Vec<Box<dyn Checkable>>, Box<dyn Error>> {

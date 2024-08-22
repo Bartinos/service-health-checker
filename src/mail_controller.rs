@@ -2,6 +2,7 @@ use lettre::message::header::ContentType;
 use lettre::transport::smtp::authentication::Credentials;
 use lettre::{Message, SmtpTransport, Transport};
 use std::env;
+use std::fmt::format;
 
 pub struct MailController {
     from: String,
@@ -23,17 +24,17 @@ impl MailController {
             to: mail_to 
                 .parse()
                 .unwrap(),
-            subject: "Service Health Check".parse().unwrap(),
+            subject: "Errors during service health checks".parse().unwrap(),
             mail_key,
         }
     }
-    pub fn send_mail(&self) {
+    pub fn send_mail(&self, report: String) {
         let email = Message::builder()
             .from(self.from.parse().unwrap())
             .to(self.to.parse().unwrap())
             .subject(&self.subject)
             .header(ContentType::TEXT_PLAIN)
-            .body(String::from("Be happy!"))
+            .body(report)
             .unwrap();
 
         let creds = Credentials::new(

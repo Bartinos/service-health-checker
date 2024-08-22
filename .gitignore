@@ -2,3 +2,4 @@
 .env
 .notes
 services.csv
+.~lock*
